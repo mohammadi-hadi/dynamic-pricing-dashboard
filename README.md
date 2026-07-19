@@ -1,6 +1,7 @@
 # Dynamic Pricing Lab
 
-**Live dashboard: <https://mohammadi-hadi.github.io/dynamic-pricing-dashboard/>**
+**Live dashboard: <https://mohammadi.cv/dynamic-pricing-dashboard/>**
+(also reachable via <https://mohammadi-hadi.github.io/dynamic-pricing-dashboard/>)
 
 An interactive simulator for dynamic pricing with demand learning. A
 monopolist sells over a season, learning unknown demand by Thompson
