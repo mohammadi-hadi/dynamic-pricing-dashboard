@@ -68,8 +68,10 @@ second natively and a few seconds in the browser.
 | File | Purpose |
 | --- | --- |
 | `simulator.py` | Vectorized simulation core (Bernoulli & Normal demand, four bandit policies, advertising, fixed-price oracle) |
-| `app.py` | Streamlit dashboard |
-| `index.html` | Browser host page (stlite) served via GitHub Pages |
+| `app.py` | Streamlit dashboard (scenario presets, insights, comparison tables) |
+| `charts.py` | Matplotlib figures in the site's editorial style |
+| `index.html` | Browser host page (stlite) served via GitHub Pages, styled to match [mohammadi.cv](https://mohammadi.cv) |
+| `.streamlit/config.toml` | Streamlit theme (paper background, navy accent) |
 | `.github/workflows/deploy.yml` | Pages deployment |
 
 ## Author

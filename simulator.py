@@ -120,7 +120,9 @@ def simulate(sc: Scenario, progress=None) -> dict:
     prev_price_incr_prob = np.ones(R)
 
     snap_every = max(1, T // 200)
-    snap_periods, snap_mean, snap_sd = [], [], []
+    snap_periods, snap_mean, snap_sd, snap_mix = [], [], [], []
+    win_counts = np.zeros(k)  # offers per arm since the last snapshot
+    win_periods = 0
 
     for t in range(T):
         c_t = sc.wtp_shift(t)
@@ -217,7 +219,12 @@ def simulate(sc: Scenario, progress=None) -> dict:
         if t == 0 and sc.ad_A != 0.0:
             revenue[:, 0] -= sc.ad_A**2
 
+        win_counts += np.bincount(pull, minlength=k)
+        win_periods += 1
         if t % snap_every == 0 or t == T - 1:
+            snap_mix.append(win_counts / (win_periods * R))
+            win_counts = np.zeros(k)
+            win_periods = 0
             if sc.dist == "Bernoulli":
                 alpha = (1.0 + success) / sc.scale
                 beta_ = (1.0 + failure) / sc.scale
@@ -238,6 +245,7 @@ def simulate(sc: Scenario, progress=None) -> dict:
         "snap_periods": np.array(snap_periods),
         "snap_mean": np.vstack(snap_mean),
         "snap_sd": np.vstack(snap_sd),
+        "snap_mix": np.vstack(snap_mix),
     }
 
 

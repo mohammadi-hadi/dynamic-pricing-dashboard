@@ -3,72 +3,237 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dynamic Pricing Lab</title>
+    <title>Dynamic Pricing Lab — Hadi Mohammadi</title>
     <meta
       name="description"
       content="Interactive simulator: dynamic pricing with demand learning, forward-looking customers, and advertising. Runs entirely in your browser."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
     />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@stlite/browser@0/build/style.css"
     />
     <style>
+      :root {
+        color-scheme: light;
+        --paper: #fafaf7;
+        --surface: #ffffff;
+        --ink: #1a1a1a;
+        --ink-2: #444444;
+        --ink-3: #6e6e6e;
+        --rule: #e3e1dc;
+        --accent: #1e3a5f;
+        --accent-hover: #2d5080;
+        --paper-deep: #f2f1ec;
+        --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+        --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        font-family: var(--sans);
+        background: var(--paper);
+        color: var(--ink);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ---------- header, matching mohammadi.cv ---------- */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: color-mix(in srgb, var(--paper) 92%, transparent);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--rule);
+        flex: none;
+      }
+      .site-header .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+        gap: 24px;
+      }
+      .wordmark {
+        font-family: var(--serif);
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      .wordmark:hover { color: var(--accent); }
+      .site-nav ul {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        padding: 0;
+        margin: 0;
+      }
+      .site-nav a {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--ink-2);
+        padding: 0.35rem 0;
+        border-bottom: 2px solid transparent;
+        text-decoration: none;
+      }
+      .site-nav a:hover { color: var(--ink); }
+      .site-nav a[aria-current="page"] {
+        color: var(--ink);
+        border-bottom-color: var(--accent);
+      }
+      @media (max-width: 560px) {
+        .site-nav li.optional { display: none; }
+      }
+
+      /* ---------- app area ---------- */
+      #root {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      /* ---------- boot screen ---------- */
       #boot {
-        font-family: system-ui, -apple-system, sans-serif;
-        max-width: 42rem;
-        margin: 16vh auto 0;
+        max-width: 40rem;
+        margin: 14vh auto 0;
         text-align: center;
-        color: #3a3a3a;
         padding: 0 1.2rem;
       }
+      #boot .kicker {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        display: block;
+        margin-bottom: 16px;
+      }
       #boot h1 {
-        font-size: 1.6rem;
-        margin-bottom: 0.6rem;
+        font-family: var(--serif);
+        font-size: 2.1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 12px;
+      }
+      #boot h1::after {
+        content: "";
+        display: block;
+        width: 44px;
+        height: 3px;
+        background: var(--accent);
+        margin: 16px auto 0;
       }
       #boot p {
-        color: #6a6a6a;
-        line-height: 1.5;
+        color: var(--ink-2);
+        line-height: 1.55;
+        margin: 16px 0 0;
+      }
+      #boot .chips {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 24px;
+        padding: 0;
+        list-style: none;
+      }
+      #boot .chip {
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 2px;
+        padding: 0.25rem 0.7rem;
+        white-space: nowrap;
       }
       #boot .bar {
-        margin: 1.4rem auto 0;
+        margin: 32px auto 0;
         width: 260px;
-        height: 6px;
-        border-radius: 3px;
-        background: #e6e6e6;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--rule);
         overflow: hidden;
       }
       #boot .bar span {
         display: block;
         height: 100%;
         width: 30%;
-        border-radius: 3px;
-        background: #0072b2;
+        border-radius: 2px;
+        background: var(--accent);
         animation: slide 1.2s ease-in-out infinite;
       }
       @keyframes slide {
         0% { margin-left: -30%; }
         100% { margin-left: 100%; }
       }
+
+      /* ---------- align the mounted app with the site ---------- */
+      .stApp { font-family: var(--sans); }
+      .stApp h1, .stApp h2, .stApp h3 { font-family: var(--serif); }
     </style>
   </head>
   <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="wordmark" href="https://mohammadi.cv/">Hadi Mohammadi</a>
+        <nav class="site-nav" aria-label="Main">
+          <ul>
+            <li><a href="#" aria-current="page">Pricing Lab</a></li>
+            <li class="optional"><a href="https://mohammadi.cv/thesis/">Thesis</a></li>
+            <li class="optional"><a href="https://mohammadi.cv/research/">Research</a></li>
+            <li>
+              <a href="https://github.com/mohammadi-hadi/dynamic-pricing-dashboard">Source</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
     <div id="root">
       <div id="boot">
-        <h1>📈 Dynamic Pricing Lab</h1>
+        <span class="kicker">Interactive simulator</span>
+        <h1>Dynamic Pricing Lab</h1>
         <p>
           Starting the in-browser Python runtime — the first visit downloads
           about 40&nbsp;MB and can take half a minute. Later visits are much
-          faster.
+          faster. Everything runs locally; nothing leaves your machine.
         </p>
+        <ul class="chips">
+          <li class="chip">Thompson sampling</li>
+          <li class="chip">Forward-looking customers</li>
+          <li class="chip">Advertising decay</li>
+        </ul>
         <div class="bar"><span></span></div>
       </div>
     </div>
+
     <script type="module">
       import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@0/build/stlite.js";
 
-      const [app, sim] = await Promise.all([
-        fetch("./app.py").then((r) => r.text()),
-        fetch("./simulator.py").then((r) => r.text()),
+      const fetchText = (path) => fetch(path).then((r) => r.text());
+      const [app, sim, figs, cfg] = await Promise.all([
+        fetchText("./app.py"),
+        fetchText("./simulator.py"),
+        fetchText("./charts.py"),
+        fetchText("./streamlit-config.toml"),
       ]);
 
       mount(
@@ -78,6 +243,8 @@
           files: {
             "app.py": app,
             "simulator.py": sim,
+            "charts.py": figs,
+            ".streamlit/config.toml": cfg,
           },
         },
         document.getElementById("root")
