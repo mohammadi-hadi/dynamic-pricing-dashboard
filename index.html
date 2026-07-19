@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dynamic Pricing Lab</title>
+    <meta
+      name="description"
+      content="Interactive simulator: dynamic pricing with demand learning, forward-looking customers, and advertising. Runs entirely in your browser."
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/browser@0/build/style.css"
+    />
+    <style>
+      #boot {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 42rem;
+        margin: 16vh auto 0;
+        text-align: center;
+        color: #3a3a3a;
+        padding: 0 1.2rem;
+      }
+      #boot h1 {
+        font-size: 1.6rem;
+        margin-bottom: 0.6rem;
+      }
+      #boot p {
+        color: #6a6a6a;
+        line-height: 1.5;
+      }
+      #boot .bar {
+        margin: 1.4rem auto 0;
+        width: 260px;
+        height: 6px;
+        border-radius: 3px;
+        background: #e6e6e6;
+        overflow: hidden;
+      }
+      #boot .bar span {
+        display: block;
+        height: 100%;
+        width: 30%;
+        border-radius: 3px;
+        background: #0072b2;
+        animation: slide 1.2s ease-in-out infinite;
+      }
+      @keyframes slide {
+        0% { margin-left: -30%; }
+        100% { margin-left: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="boot">
+        <h1>📈 Dynamic Pricing Lab</h1>
+        <p>
+          Starting the in-browser Python runtime — the first visit downloads
+          about 40&nbsp;MB and can take half a minute. Later visits are much
+          faster.
+        </p>
+        <div class="bar"><span></span></div>
+      </div>
+    </div>
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@0/build/stlite.js";
+
+      const [app, sim] = await Promise.all([
+        fetch("./app.py").then((r) => r.text()),
+        fetch("./simulator.py").then((r) => r.text()),
+      ]);
+
+      mount(
+        {
+          requirements: ["numpy", "pandas", "matplotlib"],
+          entrypoint: "app.py",
+          files: {
+            "app.py": app,
+            "simulator.py": sim,
+          },
+        },
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
