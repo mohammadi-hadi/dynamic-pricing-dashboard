@@ -29,7 +29,9 @@ willingness-to-pay by ``c(t) = ad_theta * ad_A * decay(t)``: geometric
 ``gamma**t`` or hyperbolic ``1/(t+1)`` forgetting.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 
@@ -41,9 +43,9 @@ _DELTA_CAP = 1.0 - 1e-9
 @dataclass(frozen=True)
 class Scenario:
     label: str = "scenario"
-    prices: tuple = (0.5, 0.8, 0.9)
-    demands: tuple = (0.5, 0.2, 0.1)  # baseline purchase probabilities (Bernoulli)
-    dist: str = "Bernoulli"  # "Bernoulli" | "Normal"
+    prices: tuple[float, ...] = (0.5, 0.8, 0.9)
+    demands: tuple[float, ...] = (0.5, 0.2, 0.1)  # baseline purchase probabilities (Bernoulli)
+    dist: Literal["Bernoulli", "Normal"] = "Bernoulli"
     T: int = 2000
     n_reps: int = 50
     patience: float = 0.0  # 0 = myopic, ->1 = forward-looking
@@ -52,8 +54,8 @@ class Scenario:
     ad_A: float = 0.0  # one-time advertising effort (cost ad_A**2)
     ad_theta: float = 0.0  # advertising efficiency
     ad_gamma: float = 0.998  # forgetting rate for geometric decay
-    ad_decay: str = "geometric"  # "geometric" | "hyperbolic"
-    policy: str = "ts"  # "ts" | "sw_ts" | "discounted_ts" | "decay_aware_ts"
+    ad_decay: Literal["geometric", "hyperbolic"] = "geometric"
+    policy: Literal["ts", "sw_ts", "discounted_ts", "decay_aware_ts"] = "ts"
     sw_window: int = 500
     ts_discount: float = 0.99
     seed: int = 2026
@@ -76,12 +78,22 @@ class Scenario:
         return self.ad_theta * self.ad_A / (t + 1.0)
 
 
-def simulate(sc: Scenario, progress=None) -> dict:
+def simulate(
+    sc: Scenario, progress: Callable[[float], None] | None = None
+) -> dict[str, np.ndarray]:
     """Simulate ``sc.n_reps`` selling seasons of ``sc.T`` periods at once.
 
-    Returns a dict with per-replicate revenue paths, offer counts, and
-    posterior snapshots. ``progress`` is an optional callback taking the
-    completed fraction in [0, 1].
+    Returns a dict of NumPy arrays:
+
+    * ``"revenue"``: float32, ``(n_reps, T)`` — per-period net revenue
+    * ``"arms"``: int8, ``(n_reps, T)`` — index of the offered price
+    * ``"price_freq"``: int64, ``(n_reps, k)`` — offers per price over the season
+    * ``"snap_periods"``: ``(S,)`` — periods at which posteriors were snapshotted
+    * ``"snap_mean"``, ``"snap_sd"``: ``(S, k)`` — posterior mean/sd across replicates
+    * ``"snap_mix"``: ``(S, k)`` — share of offers per price since the last snapshot
+
+    ``progress`` is an optional callback taking the completed fraction
+    in [0, 1].
     """
     k, T, R = sc.k, sc.T, sc.n_reps
     price = np.asarray(sc.prices, dtype=float)
@@ -100,9 +112,8 @@ def simulate(sc: Scenario, progress=None) -> dict:
     # the sw_ts / discounted_ts policies)
     success = np.zeros((R, k))
     failure = np.zeros((R, k))
-    if sc.policy == "sw_ts":
-        obs_arm = np.zeros((R, T), dtype=np.int8)
-        obs_buy = np.zeros((R, T), dtype=np.int8)
+    obs_arm = np.zeros((R, T), dtype=np.int8)  # only read by sw_ts
+    obs_buy = np.zeros((R, T), dtype=np.int8)
 
     # Normal posterior state
     total_play = np.zeros((R, k), dtype=np.int64)
@@ -257,7 +268,7 @@ def simulate_fixed(sc: Scenario, arm: int) -> np.ndarray:
     seller's arm choice is fixed. Used as the oracle benchmark for
     regret.
     """
-    k, T, R = sc.k, sc.T, sc.n_reps
+    T, R = sc.T, sc.n_reps
     price = np.asarray(sc.prices, dtype=float)
     d = np.asarray(sc.demands, dtype=float)
     sigma = sc.sigma_arr()

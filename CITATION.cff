@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Dynamic Pricing Lab"
+type: software
+authors:
+  - family-names: Mohammadi
+    given-names: Hadi
+version: 1.1.0
+date-released: 2026-08-05
+license: MIT
+repository-code: "https://github.com/mohammadi-hadi/dynamic-pricing-dashboard"
+url: "https://mohammadi.cv/dynamic-pricing-dashboard/"
+abstract: >-
+  Interactive simulator for dynamic pricing with demand learning:
+  Thompson sampling against myopic or forward-looking customers, with a
+  one-time advertising effort whose willingness-to-pay lift decays over
+  the season.
+keywords:
+  - dynamic pricing
+  - revenue management
+  - Thompson sampling
+  - demand learning
+  - multi-armed bandits

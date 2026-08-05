@@ -52,3 +52,6 @@ packages = ["src/dynamic_pricing_lab"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src", "tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

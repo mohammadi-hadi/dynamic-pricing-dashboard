@@ -22,6 +22,6 @@ from dynamic_pricing_lab.simulator import (
     simulate_fixed,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 __all__ = ["Scenario", "simulate", "simulate_fixed", "oracle_cum", "__version__"]

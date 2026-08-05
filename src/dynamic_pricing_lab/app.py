@@ -212,6 +212,7 @@ elif not all(0.0 < p < 1.0 for p in prices) or not all(0.0 < d <= 1.0 for d in d
 
 
 def make_scenario(name: str, ad_override=None) -> Scenario:
+    assert prices is not None and demands is not None  # callers are gated on `valid`
     s = st.session_state
     spec = CONDITIONS[name]
     A = s.A if spec["ads"] else 0.0

@@ -16,6 +16,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Check the tag matches the package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          v=$(grep -oE '__version__ = "[^"]+"' src/dynamic_pricing_lab/__init__.py | cut -d'"' -f2)
+          if [ "v$v" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match __version__ $v" >&2
+            exit 1
+          fi
       - name: Test
         run: |
           python -m pip install . pytest

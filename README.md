@@ -1,5 +1,10 @@
 # Dynamic Pricing Lab
 
+[![CI](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/mohammadi-hadi/dynamic-pricing-dashboard)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/releases)
+[![Container](https://img.shields.io/badge/ghcr.io-container-1e3a5f?logo=docker&logoColor=white)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/pkgs/container/dynamic-pricing-dashboard)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1e3a5f)](LICENSE)
+
 **Live dashboard: <https://mohammadi.cv/dynamic-pricing-dashboard/>**
 (also reachable via <https://mohammadi-hadi.github.io/dynamic-pricing-dashboard/>)
 
