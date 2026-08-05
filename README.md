@@ -42,40 +42,71 @@ the seller is learning, but the total drift θA/(1−γ) is bounded and
 chosen by the seller. Full details are on the dashboard's *Model notes*
 tab.
 
-## Run locally
+## Install
+
+The repository is a Python package, `dynamic-pricing-lab`. Install the
+dashboard straight from GitHub and launch it:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+pip install "dynamic-pricing-lab[dashboard] @ git+https://github.com/mohammadi-hadi/dynamic-pricing-dashboard.git"
+dynamic-pricing-lab   # opens the dashboard at http://localhost:8501
 ```
 
-`simulator.py` has no dependencies beyond NumPy and can be used on its
-own:
+Leave out `[dashboard]` for the NumPy-only simulation core. Prebuilt
+wheels are attached to [GitHub
+releases](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/releases),
+and the dashboard is also published as a container image on GitHub
+Packages:
+
+```bash
+docker run --rm -p 8501:8501 ghcr.io/mohammadi-hadi/dynamic-pricing-dashboard
+```
+
+## Use as a library
+
+The simulation core has no dependencies beyond NumPy and can be used on
+its own:
 
 ```python
-from simulator import Scenario, simulate
+from dynamic_pricing_lab import Scenario, simulate
 
 out = simulate(Scenario(patience=0.99, ad_A=5, ad_theta=0.05, ad_gamma=0.998))
 print(out["revenue"].sum(axis=1).mean())  # mean net season revenue
 ```
 
+`simulate_fixed` and `oracle_cum` — the fixed-price benchmark behind the
+regret curves — are exported too.
+
 All replicates of a scenario are simulated simultaneously (vectorized
 across seasons), so a 50-replicate, 2,000-period run takes about a
 second natively and a few seconds in the browser.
+
+## Develop
+
+```bash
+git clone https://github.com/mohammadi-hadi/dynamic-pricing-dashboard.git
+cd dynamic-pricing-dashboard
+pip install -e ".[dashboard]"
+dynamic-pricing-lab   # or: streamlit run src/dynamic_pricing_lab/app.py
+pytest                # smoke-tests for the simulation core
+```
 
 ## Repository layout
 
 | File | Purpose |
 | --- | --- |
-| `simulator.py` | Vectorized simulation core (Bernoulli & Normal demand, four bandit policies, advertising, fixed-price oracle) |
-| `app.py` | Streamlit dashboard (scenario presets, insights, comparison tables) |
-| `charts.py` | Matplotlib figures in the site's editorial style |
+| `src/dynamic_pricing_lab/simulator.py` | Vectorized simulation core (Bernoulli & Normal demand, four bandit policies, advertising, fixed-price oracle) |
+| `src/dynamic_pricing_lab/app.py` | Streamlit dashboard (scenario presets, insights, comparison tables) |
+| `src/dynamic_pricing_lab/charts.py` | Matplotlib figures in the site's editorial style |
+| `src/dynamic_pricing_lab/__main__.py` | `dynamic-pricing-lab` launcher for the installed dashboard |
 | `index.html` | Browser host page (stlite) served via GitHub Pages, styled to match [mohammadi.cv](https://mohammadi.cv) |
 | `.streamlit/config.toml` | Streamlit theme (paper background, navy accent) |
-| `.github/workflows/deploy.yml` | Pages deployment |
+| `pyproject.toml` | Package metadata for `dynamic-pricing-lab` |
+| `Dockerfile` | Dashboard container image (published to ghcr.io) |
+| `.github/workflows/` | Pages deployment, CI, release wheels, container publishing |
 
 ## Author
 
 Hadi Mohammadi — companion tool to a research project on dynamic
 pricing with demand learning, forward-looking customers, and
-advertising.
+advertising. MIT-licensed.

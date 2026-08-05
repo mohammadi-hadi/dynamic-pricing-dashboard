@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dynamic-pricing-lab"
+dynamic = ["version"]
+description = "Dynamic pricing simulator: Thompson-sampling demand learning, forward-looking customers, and advertising"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Hadi Mohammadi" }]
+keywords = [
+  "dynamic-pricing",
+  "revenue-management",
+  "thompson-sampling",
+  "multi-armed-bandit",
+  "demand-learning",
+  "simulation",
+  "streamlit",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+dashboard = ["streamlit>=1.32", "pandas>=2.0", "matplotlib>=3.8"]
+
+[project.scripts]
+dynamic-pricing-lab = "dynamic_pricing_lab.__main__:main"
+
+[project.urls]
+Homepage = "https://mohammadi.cv/dynamic-pricing-dashboard/"
+Repository = "https://github.com/mohammadi-hadi/dynamic-pricing-dashboard"
+Issues = "https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/issues"
+
+[tool.hatch.version]
+path = "src/dynamic_pricing_lab/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dynamic_pricing_lab"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE"]

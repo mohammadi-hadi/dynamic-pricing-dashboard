@@ -14,8 +14,12 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-import charts
-from simulator import Scenario, oracle_cum, simulate
+try:  # installed package (pip install dynamic-pricing-lab)
+    from dynamic_pricing_lab import charts
+    from dynamic_pricing_lab.simulator import Scenario, oracle_cum, simulate
+except ModuleNotFoundError:  # flat files: stlite in the browser, or a bare checkout
+    import charts
+    from simulator import Scenario, oracle_cum, simulate
 
 st.set_page_config(page_title="Dynamic Pricing Lab", page_icon="📈", layout="wide")
 

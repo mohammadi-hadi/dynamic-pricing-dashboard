@@ -1,0 +1,10 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+dist
+build
+_site
+.pytest_cache
+.DS_Store

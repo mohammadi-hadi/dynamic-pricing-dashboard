@@ -28,7 +28,8 @@ jobs:
       - name: Assemble site
         run: |
           mkdir _site
-          cp index.html app.py simulator.py charts.py _site/
+          cp index.html _site/
+          cp src/dynamic_pricing_lab/app.py src/dynamic_pricing_lab/simulator.py src/dynamic_pricing_lab/charts.py _site/
           cp .streamlit/config.toml _site/streamlit-config.toml
       - uses: actions/upload-pages-artifact@v3
         with:
