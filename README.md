@@ -121,7 +121,7 @@ please cite it (GitHub's "Cite this repository" button uses
   author  = {Mohammadi, Hadi},
   title   = {Dynamic Pricing Lab},
   year    = {2026},
-  version = {1.1.0},
+  version = {1.1.1},
   url     = {https://github.com/mohammadi-hadi/dynamic-pricing-dashboard},
   license = {MIT}
 }
