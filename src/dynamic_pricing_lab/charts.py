@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Hadi Mohammadi <https://mohammadi.cv>
+# SPDX-License-Identifier: MIT
+
 """Matplotlib figures for the dashboard, in the site's editorial style:
 paper background, navy accent, hairline rules, left-aligned titles."""
 

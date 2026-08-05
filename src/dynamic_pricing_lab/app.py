@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Hadi Mohammadi <https://mohammadi.cv>
+# SPDX-License-Identifier: MIT
+
 """Dynamic Pricing Lab — interactive dashboard.
 
 A seller learns unknown demand by Thompson sampling while customers may

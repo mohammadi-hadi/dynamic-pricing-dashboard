@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Hadi Mohammadi <https://mohammadi.cv>
+# SPDX-License-Identifier: MIT
+
 """Dynamic Pricing Lab — dynamic pricing with demand learning.
 
 Vectorized simulator for a monopolist who prices by Thompson sampling

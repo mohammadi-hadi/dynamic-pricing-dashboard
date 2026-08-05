@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Hadi Mohammadi <https://mohammadi.cv>
+# SPDX-License-Identifier: MIT
+
 """Vectorized simulation core for the dynamic-pricing dashboard.
 
 Thompson sampling pricing against myopic or forward-looking customers,

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Hadi Mohammadi <https://mohammadi.cv>
+# SPDX-License-Identifier: MIT
+
 """Launch the Streamlit dashboard: ``python -m dynamic_pricing_lab``.
 
 Also installed as the ``dynamic-pricing-lab`` console script. Extra

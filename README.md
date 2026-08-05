@@ -110,8 +110,26 @@ pytest                # smoke-tests for the simulation core
 | `Dockerfile` | Dashboard container image (published to ghcr.io) |
 | `.github/workflows/` | Pages deployment, CI, release wheels, container publishing |
 
+## Citing
+
+If you use this software or build on its model in academic work,
+please cite it (GitHub's "Cite this repository" button uses
+[`CITATION.cff`](CITATION.cff)):
+
+```bibtex
+@software{mohammadi_dynamic_pricing_lab_2026,
+  author  = {Mohammadi, Hadi},
+  title   = {Dynamic Pricing Lab},
+  year    = {2026},
+  version = {1.1.0},
+  url     = {https://github.com/mohammadi-hadi/dynamic-pricing-dashboard},
+  license = {MIT}
+}
+```
+
 ## Author
 
 Hadi Mohammadi — companion tool to a research project on dynamic
 pricing with demand learning, forward-looking customers, and
-advertising. MIT-licensed.
+advertising. MIT-licensed: reuse is welcome, but the copyright notice
+must be preserved and academic use should credit the author.
