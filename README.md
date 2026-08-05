@@ -4,6 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/mohammadi-hadi/dynamic-pricing-dashboard)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/releases)
 [![Container](https://img.shields.io/badge/ghcr.io-container-1e3a5f?logo=docker&logoColor=white)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/pkgs/container/dynamic-pricing-dashboard)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1e3a5f)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21802866.svg)](https://doi.org/10.5281/zenodo.21802866)
 
 **Live dashboard: <https://mohammadi.cv/dynamic-pricing-dashboard/>**
 (also reachable via <https://mohammadi-hadi.github.io/dynamic-pricing-dashboard/>)
@@ -122,6 +123,7 @@ please cite it (GitHub's "Cite this repository" button uses
   title   = {Dynamic Pricing Lab},
   year    = {2026},
   version = {1.1.1},
+  doi     = {10.5281/zenodo.21802866},
   url     = {https://github.com/mohammadi-hadi/dynamic-pricing-dashboard},
   license = {MIT}
 }
