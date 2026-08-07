@@ -31,10 +31,17 @@ and no data leaves your machine. The first visit downloads the runtime
   regret against the best fixed price, how often each price is offered,
   and how the seller's posterior beliefs converge.
 - **Optimal advertising** — sweep the one-time effort *A* and find the
-  interior optimum *A\**, separately for patient and myopic customers.
+  interior optimum *A\**, separately for patient and myopic customers,
+  against the full-information benchmark *A\*₍FI₎ = p₁θ/(2(1−γ))*.
+- **Patience × advertising** — a heatmap of net revenue over the
+  (patience, effort) plane with the ridge *A\*(λ)*: the optimal effort
+  rises as customers get more patient.
 - **Learning policies** — pit plain Thompson sampling against
   sliding-window, discounted, and decay-aware variants under the
   advertising-induced demand drift.
+- **Three demand models** — Bernoulli purchases, Normal revenue, and a
+  Poisson purchase-count variant with a Gamma posterior (the paper's
+  unbounded-demand robustness check).
 
 ## Model in one paragraph
 
@@ -44,19 +51,22 @@ a future discount is not credible given the observed price history, and
 a fraction ρ of waiters returns next period. A one-time advertising
 effort A, paid up front at cost A², lifts every customer's
 willingness-to-pay by c(t) = θAγ^(t−1) — demand drifts exactly while
-the seller is learning, but the total drift θA/(1−γ) is bounded and
-chosen by the seller. Full details are on the dashboard's *Model notes*
-tab.
+the seller is learning, but the drift is chosen and paid for by the
+seller: the cumulative lift is at most θA/(1−γ) and the total variation
+of the demand path at most θA. Full details are on the dashboard's
+*Model notes* tab.
 
 ## Install
 
-The repository is a Python package, `dynamic-pricing-lab`. Install the
-dashboard straight from GitHub and launch it:
+The repository is a Python package, `dynamic-pricing-lab`, on PyPI:
 
 ```bash
-pip install "dynamic-pricing-lab[dashboard] @ git+https://github.com/mohammadi-hadi/dynamic-pricing-dashboard.git"
+pip install "dynamic-pricing-lab[dashboard]"
 dynamic-pricing-lab   # opens the dashboard at http://localhost:8501
 ```
+
+(or straight from GitHub:
+`pip install "dynamic-pricing-lab[dashboard] @ git+https://github.com/mohammadi-hadi/dynamic-pricing-dashboard.git"`)
 
 Leave out `[dashboard]` for the NumPy-only simulation core. Prebuilt
 wheels are attached to [GitHub
