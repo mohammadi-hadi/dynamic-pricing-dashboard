@@ -1,0 +1,20 @@
+{
+  "title": "Dynamic Pricing Lab",
+  "description": "Interactive simulator for dynamic pricing with demand learning: Thompson sampling against myopic or forward-looking customers, with a one-time advertising effort whose willingness-to-pay lift decays over the season.",
+  "creators": [
+    {
+      "name": "Mohammadi, Hadi",
+      "orcid": "0000-0003-0860-9200",
+      "affiliation": "Utrecht University"
+    }
+  ],
+  "license": "mit",
+  "upload_type": "software",
+  "keywords": [
+    "dynamic pricing",
+    "revenue management",
+    "Thompson sampling",
+    "demand learning",
+    "multi-armed bandits"
+  ]
+}
