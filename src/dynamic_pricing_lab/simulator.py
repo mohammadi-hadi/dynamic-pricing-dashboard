@@ -18,6 +18,12 @@ Period-by-period dynamics:
   under a N(0,1) prior (mean ``sum(r)/(1 + plays)``, sd
   ``1/sqrt(1 + plays)``); the seller offers the arm with the largest
   posterior draw.
+* ``Poisson``: per-period purchase *counts* with the Bernoulli means as
+  rates; Gamma(1, 1) prior on each arm's rate, updated to
+  Gamma(1 + purchases, 1 + plays); the seller offers the arm maximizing
+  ``theta * price`` over Gamma posterior draws. The rate is unbounded
+  above, so the advertising lift is floored at zero only. Vanilla
+  Thompson sampling only (no forgetting variants).
 
 Customer behaviour is controlled by the patience factor ``patience``
 (0 = myopic, close to 1 = forward-looking). Forward-looking customers
@@ -48,7 +54,7 @@ class Scenario:
     label: str = "scenario"
     prices: tuple[float, ...] = (0.5, 0.8, 0.9)
     demands: tuple[float, ...] = (0.5, 0.2, 0.1)  # baseline purchase probabilities (Bernoulli)
-    dist: Literal["Bernoulli", "Normal"] = "Bernoulli"
+    dist: Literal["Bernoulli", "Normal", "Poisson"] = "Bernoulli"
     T: int = 2000
     n_reps: int = 50
     patience: float = 0.0  # 0 = myopic, ->1 = forward-looking
@@ -128,6 +134,10 @@ def simulate(
     da_mean = np.zeros((R, k))
     da_n = np.zeros((R, k), dtype=np.int64)
 
+    # Poisson posterior state: Gamma(1 + purchases, 1 + plays) per arm
+    pois_count = np.zeros((R, k))
+    pois_play = np.zeros((R, k), dtype=np.int64)
+
     # forward-looking bookkeeping
     sum_price_offered = np.zeros(R)
     prev_arm = np.full(R, -1, dtype=np.int64)
@@ -151,6 +161,9 @@ def simulate(
                 beta_ = (1.0 + failure) / sc.scale
                 theta = rng.beta(alpha, beta_)
                 pull = np.argmax(theta * price, axis=1)
+        elif sc.dist == "Poisson":
+            theta = rng.gamma(1.0 + pois_count, 1.0 / (1.0 + pois_play))
+            pull = np.argmax(theta * price, axis=1)
         else:
             theta = rng.normal(mu_tilde, sigma_tilde)
             pull = np.argmax(theta, axis=1)
@@ -209,6 +222,33 @@ def simulate(
 
             prev_price_incr_prob = price_incr_prob
             prev_arm = pull
+        elif sc.dist == "Poisson":
+            # Poisson demand: purchase counts with the Bernoulli means as
+            # rates; the rate is unbounded above, so the lift is floored
+            # at zero only.
+            lam = np.maximum(d[pull] + c_t, 0.0)
+            w_bar = price_count / (t + 1)
+            if strategic:
+                ratio = (offered + delta - 1.0) / delta
+                mask = price[None, :] >= ratio[:, None]
+                price_incr_prob = np.where(mask, w_bar, 0.0).sum(axis=1)
+            else:
+                price_incr_prob = np.ones(R)
+
+            n_buy = rng.poisson(lam * price_incr_prob)
+            prob_wait = np.where(
+                prev_arm >= 0,
+                np.maximum(d[prev_arm] + c_t, 0.0)
+                * np.maximum(1.0 - prev_price_incr_prob, 0.0),
+                0.0,
+            )
+            extra = offered * rng.poisson(lam * sc.return_frac * prob_wait)
+            revenue[:, t] = offered * n_buy + extra
+
+            pois_count[rows, pull] += n_buy
+            pois_play[rows, pull] += 1
+            prev_price_incr_prob = price_incr_prob
+            prev_arm = pull
         else:
             # Normal demand: the WTP lift is equivalent to lowering the
             # effective price faced by the customer.
@@ -243,6 +283,8 @@ def simulate(
                 alpha = (1.0 + success) / sc.scale
                 beta_ = (1.0 + failure) / sc.scale
                 pm = alpha / (alpha + beta_)  # posterior mean of demand
+            elif sc.dist == "Poisson":
+                pm = (1.0 + pois_count) / (1.0 + pois_play)  # mean rate
             else:
                 pm = mu_tilde  # posterior mean of expected revenue
             snap_periods.append(t + 1)
@@ -297,6 +339,19 @@ def simulate_fixed(sc: Scenario, arm: int) -> np.ndarray:
             prob_wait = d_eff * (1.0 - prev_price_incr_prob) if t > 0 else 0.0
             extra = offered * (rng.random(R) < d_eff) * sc.return_frac * prob_wait
             revenue[:, t] = np.where(buy, offered, 0.0) + extra
+            prev_price_incr_prob = price_incr_prob
+        elif sc.dist == "Poisson":
+            lam = max(d[arm] + c_t, 0.0)
+            if strategic:
+                # all past offers sit at this arm's price
+                ratio = (offered + delta - 1.0) / delta
+                price_incr_prob = np.full(R, 1.0 if offered >= ratio else 0.0)
+            else:
+                price_incr_prob = np.ones(R)
+            n_buy = rng.poisson(lam * price_incr_prob)
+            prob_wait = lam * np.maximum(1.0 - prev_price_incr_prob, 0.0) if t > 0 else 0.0
+            extra = offered * rng.poisson(lam * sc.return_frac * prob_wait, size=R)
+            revenue[:, t] = offered * n_buy + extra
             prev_price_incr_prob = price_incr_prob
         else:
             p_eff = offered - c_t

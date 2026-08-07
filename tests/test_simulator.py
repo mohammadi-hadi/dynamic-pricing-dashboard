@@ -36,11 +36,34 @@ def test_every_policy_runs(policy):
     assert np.isfinite(simulate(sc)["revenue"]).all()
 
 
-@pytest.mark.parametrize("dist", ["Bernoulli", "Normal"])
+@pytest.mark.parametrize("dist", ["Bernoulli", "Normal", "Poisson"])
 @pytest.mark.parametrize("patience", [0.0, 0.95])
 def test_demand_models_and_patience(dist, patience):
     sc = replace(TINY, dist=dist, patience=patience)
     assert np.isfinite(simulate(sc)["revenue"]).all()
+
+
+def test_poisson_learns_rates():
+    sc = replace(TINY, dist="Poisson", T=400, n_reps=8)
+    out = simulate(sc)
+    pm = out["snap_mean"][-1]  # posterior mean rate per arm
+    top = int(out["price_freq"].sum(axis=0).argmax())
+    assert abs(pm[top] - sc.demands[top]) < 0.15
+
+
+def test_poisson_fixed_and_oracle():
+    sc = replace(TINY, dist="Poisson", patience=0.95)
+    assert simulate_fixed(sc, arm=1).shape == (sc.n_reps, sc.T)
+    assert oracle_cum(sc).shape == (sc.T,)
+
+
+def test_poisson_ad_cost_charged_up_front():
+    base = simulate(replace(TINY, dist="Poisson"))
+    ads = simulate(replace(TINY, dist="Poisson", ad_A=3.0, ad_theta=0.0))
+    np.testing.assert_allclose(
+        ads["revenue"][:, 0], base["revenue"][:, 0] - 9.0, atol=1e-4
+    )
+    np.testing.assert_array_equal(ads["revenue"][:, 1:], base["revenue"][:, 1:])
 
 
 def test_ad_cost_charged_up_front():
