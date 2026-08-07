@@ -68,15 +68,15 @@ CONDITIONS = {
 
 DEFAULTS = {
     "dist": "Bernoulli",
-    "prices_text": "0.5, 0.8, 0.9",
-    "demands_text": "0.5, 0.2, 0.1",
-    "T": 2000,
+    "prices_text": "0.6, 0.75, 0.85, 0.95",
+    "demands_text": "0.4, 0.25, 0.15, 0.05",
+    "T": 3000,
     "reps": 50,
-    "patience": 0.99,
-    "rho": 1.0,
-    "A": 5.0,
-    "theta": 0.05,
-    "gamma": 0.998,
+    "patience": 0.95,
+    "rho": 0.8,
+    "A": 4.0,
+    "theta": 0.045,
+    "gamma": 0.9975,
     "decay": "geometric",
     "policy": "ts",
     "window": 500,
@@ -89,9 +89,11 @@ DEFAULTS = {
 PRESETS = {
     "Paper calibration (2×2)": {},
     "Five-price menu — patience can backfire": {
-        "prices_text": "0.5, 0.6, 0.7, 0.8, 0.9",
-        "demands_text": "0.5, 0.45, 0.35, 0.2, 0.1",
+        "prices_text": "0.3, 0.5, 0.65, 0.8, 0.95",
+        "demands_text": "0.7, 0.5, 0.35, 0.2, 0.05",
+        "A": 3.0,
     },
+    "Poisson demand — robustness check": {"dist": "Poisson"},
     "Hyperbolic decay — advertising value destroyed": {"decay": "hyperbolic"},
     "Sliding-window TS — forgetting loses money": {"policy": "sw_ts"},
 }
@@ -157,13 +159,15 @@ with st.sidebar:
     )
     with st.form("params"):
         st.subheader("Market")
-        st.radio("Demand model", ["Bernoulli", "Normal"], horizontal=True, key="dist")
+        st.radio("Demand model", ["Bernoulli", "Normal", "Poisson"],
+                 horizontal=True, key="dist")
         st.text_input("Price menu", key="prices_text")
         st.text_input("Baseline demand per price", key="demands_text")
         st.caption(
             "Comma-separated, equal length, prices in (0, 1). In the Normal "
             "model the purchase probability is 1 − price; demands only set "
-            "the noise scale σᵢ = pᵢdᵢ/4."
+            "the noise scale σᵢ = pᵢdᵢ/4. In the Poisson model demands are "
+            "purchase *rates* learned by a Gamma posterior."
         )
         st.slider("Season length T", 500, 4000, step=250, key="T")
         st.slider("Replicates", 10, 200, step=10, key="reps")
@@ -293,8 +297,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_lab, tab_sweep, tab_about = st.tabs(
-    ["Scenario lab", "Optimal advertising", "Model notes"]
+tab_lab, tab_sweep, tab_map, tab_about = st.tabs(
+    ["Scenario lab", "Optimal advertising", "Patience × advertising", "Model notes"]
 )
 
 # ---------------------------------------------------------------- scenario lab
@@ -423,7 +427,15 @@ with tab_sweep:
     sweep = st.session_state.get("sweep")
     if sweep:
         grid, curves = sweep["grid"], sweep["curves"]
-        fig = charts.sweep(grid, curves)
+        a_fi = None
+        if (valid and st.session_state.dist != "Normal"
+                and st.session_state.decay == "geometric"
+                and float(st.session_state.gamma) < 1.0):
+            p_arr, d_arr = np.asarray(prices), np.asarray(demands)
+            p_opt = float(p_arr[int(np.argmax(p_arr * d_arr))])
+            a_fi = (p_opt * float(st.session_state.theta)
+                    / (2.0 * (1.0 - float(st.session_state.gamma))))
+        fig = charts.sweep(grid, curves, a_fi=a_fi)
         st.pyplot(fig)
         charts.plt.close(fig)
         best = {lbl: grid[int(np.argmax(c[0]))] for lbl, c in curves.items()}
@@ -435,6 +447,15 @@ with tab_sweep:
                 "— advertising also buys a weaker incentive to wait.</div>",
                 unsafe_allow_html=True,
             )
+        if a_fi is not None:
+            st.markdown(
+                f'<div class="insight">Full-information benchmark: a seller '
+                f"who knows demand would choose <b>A*_FI = p₁θ/(2(1−γ)) = "
+                f"{a_fi:.1f}</b> (dashed line). The learning seller's optimum "
+                "sits below it — experimentation and advertising compete for "
+                "the same early periods.</div>",
+                unsafe_allow_html=True,
+            )
         rows = {"A": np.round(grid, 2)}
         rows.update({lbl: np.round(np.asarray(c[0]), 1)
                      for lbl, c in curves.items()})
@@ -443,6 +464,58 @@ with tab_sweep:
             "Both curves use the sidebar market, customer, and decay "
             "settings; the myopic curve sets λ = 0."
         )
+
+# ---------------------------------------------------------- patience map
+with tab_map:
+    st.markdown(
+        "How does the optimal effort move with customer patience? Each cell "
+        "simulates the sidebar market at one (patience $\\lambda$, effort "
+        "$A$) pair; the dots trace the ridge $A^{*}(\\lambda)$."
+    )
+    m1, m2, m3 = st.columns(3)
+    map_amax = m1.slider("Largest effort to try", 2.0, 12.0, 8.0, step=1.0,
+                         key="map_amax")
+    map_astep = m2.select_slider("Effort step", [0.5, 1.0, 2.0], value=1.0,
+                                 key="map_astep")
+    map_reps = m3.slider("Replicates per cell", 10, 60, 20, step=5,
+                         key="map_reps")
+
+    if st.button("▶ Build map", type="primary") and valid:
+        lam_grid = [0.0, 0.3, 0.6, 0.8, 0.9, 0.95, 0.99]
+        a_grid = np.arange(0.0, map_amax + 1e-9, map_astep)
+        z = np.zeros((len(lam_grid), len(a_grid)))
+        bar = st.progress(0.0, text="Building the map…")
+        done, n_tot = 0, len(lam_grid) * len(a_grid)
+        for i, lam in enumerate(lam_grid):
+            for j, A in enumerate(a_grid):
+                sc = replace(
+                    make_scenario("Forward-looking + ads",
+                                  ad_override=float(A)),
+                    patience=float(lam), n_reps=int(map_reps),
+                )
+                z[i, j] = run_scenario(sc)["final"].mean()
+                done += 1
+                bar.progress(done / n_tot, text=f"λ = {lam:g}, A = {A:g}")
+        bar.empty()
+        st.session_state["patmap"] = {"lam": lam_grid, "A": a_grid, "z": z}
+
+    pm = st.session_state.get("patmap")
+    if pm:
+        fig = charts.patience_map(pm["lam"], pm["A"], pm["z"])
+        st.pyplot(fig)
+        charts.plt.close(fig)
+        ridge = {f"λ = {l:g}": pm["A"][int(np.argmax(row))]
+                 for l, row in zip(pm["lam"], pm["z"])}
+        st.dataframe(pd.DataFrame({"Patience": list(ridge),
+                                   "A*": list(ridge.values())}),
+                     hide_index=True)
+        st.caption(
+            "The optimal effort tends to rise with patience: the "
+            "willingness-to-pay lift also erodes the option value of "
+            "waiting, so advertising works twice for a seller facing "
+            "patient customers."
+        )
+
 
 # ---------------------------------------------------------------- about
 with tab_about:
@@ -459,7 +532,12 @@ experiment.
 posterior on each price's purchase probability, draws
 $\\vartheta_i \\sim \\mathrm{Beta}(\\alpha_i, \\beta_i)$, and posts the
 price maximizing $p_i\\,\\vartheta_i$. In the Normal model the posterior
-is Gaussian over expected revenue per period.
+is Gaussian over expected revenue per period. In the Poisson model each
+period's purchase *count* is Poisson with the same baseline rates; the
+seller keeps a $\\mathrm{Gamma}(1+\\text{purchases},\\,1+\\text{plays})$
+posterior per price and again posts the price maximizing
+$p_i\\,\\vartheta_i$ — the unbounded-demand robustness check of the
+paper's supplement.
 
 **Forward-looking customers** (patience $\\lambda$) compare buying now
 against waiting. In the Bernoulli model a customer facing price $p$ buys
@@ -480,9 +558,13 @@ lifts every customer's willingness-to-pay in period $t$ by
     st.markdown(
         """
 so demand is **nonstationary exactly while the seller is learning** —
-but the drift is chosen and paid for by the seller, and its total size
-$\\sum_t c(t) = \\theta A/(1-\\gamma)$ does not grow with the horizon.
-The hyperbolic option replaces $\\gamma^{t-1}$ with $1/t$.
+but the drift is chosen and paid for by the seller: the cumulative lift
+is $\\sum_t c(t) \\le \\theta A/(1-\\gamma)$ and the total *variation*
+of the demand path is at most $\\theta A$, constants that do not grow
+with the horizon. For a seller who knows demand, the optimal one-time
+effort has the closed form $A^{*}_{\\mathrm{FI}} = p_1\\theta/(2(1-\\gamma))$
+with $p_1$ the revenue-optimal price; the learning seller's optimum sits
+below it. The hyperbolic option replaces $\\gamma^{t-1}$ with $1/t$.
 
 **Policies.** Besides plain Thompson sampling you can try
 sliding-window TS (drops observations older than the window),

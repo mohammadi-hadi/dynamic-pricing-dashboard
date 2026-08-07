@@ -15,5 +15,5 @@ def test_app_script_runs_clean():
     at.run()
     assert not at.exception, at.exception
     assert at.title[0].value == "Dynamic Pricing Lab"
-    assert len(at.tabs) == 3
+    assert len(at.tabs) == 4
     assert len(at.sidebar) > 0

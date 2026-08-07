@@ -134,7 +134,7 @@ def policy_mix(r, prices) -> plt.Figure:
     return fig
 
 
-def sweep(grid, curves) -> plt.Figure:
+def sweep(grid, curves, a_fi: float | None = None) -> plt.Figure:
     fig, ax = _ax("Advertising effort A", "Mean net revenue",
                   "Net revenue by advertising effort — ★ marks A*", height=3.3)
     for label, (means, ses, color) in curves.items():
@@ -148,5 +148,27 @@ def sweep(grid, curves) -> plt.Figure:
         ax.annotate(f"A* = {grid[best]:g}", (grid[best], means[best]),
                     textcoords="offset points", xytext=(6, 8), fontsize=8.5,
                     color=color)
+    if a_fi is not None and grid[0] <= a_fi <= grid[-1]:
+        ax.axvline(a_fi, color=INK3, ls=(0, (3, 2)), lw=1.1, zorder=1)
+        ax.annotate(f"A*_FI = {a_fi:.1f}", (a_fi, ax.get_ylim()[0]),
+                    textcoords="offset points", xytext=(5, 6), fontsize=8,
+                    color=INK3)
     ax.legend(loc="lower center")
+    return fig
+
+
+def patience_map(lams, a_grid, z) -> plt.Figure:
+    """Net-revenue heatmap over (patience, effort) with the A*(λ) ridge."""
+    fig, ax = _ax("Advertising effort A", "Patience λ",
+                  "Net revenue across patience and effort — dots trace A*(λ)",
+                  height=3.3)
+    ax.grid(False)
+    pc = ax.pcolormesh(a_grid, lams, z, cmap="Blues", shading="nearest",
+                       rasterized=True)
+    cb = fig.colorbar(pc, ax=ax, pad=0.02)
+    cb.set_label("Mean net revenue", fontsize=8)
+    cb.outline.set_visible(False)
+    best = [a_grid[int(np.argmax(row))] for row in z]
+    ax.plot(best, lams, marker="o", ms=5.5, color=BRICK, lw=1.2,
+            mec=SURFACE, mew=0.7)
     return fig
