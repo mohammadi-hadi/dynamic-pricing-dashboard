@@ -1,10 +1,16 @@
+<div align="center">
+
 # Dynamic Pricing Lab
 
 [![CI](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/mohammadi-hadi/dynamic-pricing-dashboard)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/releases)
 [![Container](https://img.shields.io/badge/ghcr.io-container-1e3a5f?logo=docker&logoColor=white)](https://github.com/mohammadi-hadi/dynamic-pricing-dashboard/pkgs/container/dynamic-pricing-dashboard)
-[![License: MIT](https://img.shields.io/badge/license-MIT-1e3a5f)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21802866.svg)](https://doi.org/10.5281/zenodo.21802866)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1e3a5f)](LICENSE)
+
+*Interactive in-browser simulator: dynamic pricing with demand learning, forward-looking customers, and advertising.*
+
+</div>
 
 **Live dashboard: <https://mohammadi.cv/dynamic-pricing-dashboard/>**
 (also reachable via <https://mohammadi-hadi.github.io/dynamic-pricing-dashboard/>)
